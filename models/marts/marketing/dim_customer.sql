@@ -1,34 +1,30 @@
 with customers as (
-    select *
-    from {{ ref("stg_jaffle_shop__customer") }}
+    select * from {{ ref ('stg_jaffle_shop__customer')}}
 ),
-
 orders as (
-    select *
-    from {{ ref("stg_jaffle_shop__order") }}
+    select * from {{ ref ('fct_order')}}
 ),
-
-customers_orders as (
-    select customer_id,
-    min(order_date) as first_order_date,
-    max(order_date) as most_recent_order_date,
-    count(order_id) as number_of_orders
+customer_orders as (
+    select
+        customer_id,
+        min (order_date) as first_order_date,
+        max (order_date) as most_recent_order_date,
+        count(order_id) as number_of_orders,
+        sum(amount) as lifetime_value
     from orders
     group by 1
 ),
 
 final as (
-    select 
-        c.customer_id,
-        c.first_name,
-        c.last_name,
-        co.first_order_date,
-        co.most_recent_order_date,
-        coalesce(co.number_of_orders, 0) as number_of_orders
-    from customers c
-    left join customers_orders co
-        on c.customer_id = co.customer_id
+select
+    customers.customer_id,
+    customers.first_name,
+    customers.last_name,
+    customer_orders.first_order_date,
+    customer_orders.most_recent_order_date,
+    coalesce (customer_orders.number_of_orders, 0) as number_of_orders,
+    customer_orders.lifetime_value
+from customers
+left join customer_orders using (customer_id)
 )
-
 select * from final
-
