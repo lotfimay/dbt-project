@@ -1,8 +1,8 @@
 with customers as (
-    select * from {{ ref ('stg_jaffle_shop__customer')}}
+    select * from {{ ref ('stg_jaffle_shop__customers')}}
 ),
 orders as (
-    select * from {{ ref ('fct_order')}}
+    select * from {{ ref ('fct_orders')}}
 ),
 customer_orders as (
     select
